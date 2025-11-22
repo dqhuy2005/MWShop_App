@@ -1,40 +1,11 @@
-import { useState } from "react";
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import HomeScreen from "../pages/HomeScreen";
 
-export default function HomeScreen() {
-  const [user, setUser] = useState<{
-    name: string;
-    age: string;
-    checkIn: boolean;
-  }>({ name: "", age: "", checkIn: false });
 
-  const [students, setStudents] = useState<Array<{
-    name: string;
-    age: string;
-  }>>([
-    { name: "Alice", age: "20" },
-    { name: "Bob", age: "22" },
-    { name: "Charlie", age: "19" },
-  ]);
-
-  const alertInputs = (name: string) => {
-    setUser({ ...user, name });
-    Alert.alert('Hello user',`Welcome to system ${user.name}!`);
-  };
-
+export default function App() {
   return (
-    <View style={styles.container}> 
-      <View style={styles.section}>
-        <Text style={styles.subtitle}>Name:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Set name..."
-          onChangeText={(name) => setUser({ ...user, name })}
-        />
-        <Button title="Submit" onPress={() => alertInputs(user.name)} />
-      </View>
-
-
+    <View>
+      <HomeScreen />
     </View>
   );
 }
@@ -46,31 +17,42 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     marginBottom: 10,
     marginTop: 40,
+    color: "#333",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
-    marginBottom: 10,
+    marginBottom: 20,
+    color: "#666",
+  },
+  card: {
+    backgroundColor: "#f9f9f9",
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: "#333",
   },
   text: {
     fontSize: 16,
     marginBottom: 8,
-    color: "#333",
+    color: "#555",
+    lineHeight: 22,
   },
-  section: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
+  bulletPoint: {
     fontSize: 16,
+    marginBottom: 6,
+    color: "#555",
+    paddingLeft: 10,
   },
 });
