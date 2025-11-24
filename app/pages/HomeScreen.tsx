@@ -66,52 +66,49 @@ export default function HomeScreen() {
     <ProductCard product={item} />
   );
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBox}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Tìm kiếm sản phẩm..."
-            placeholderTextColor="#999"
-          />
-          <TouchableOpacity style={styles.cameraButton}>
-            <Text style={styles.cameraIcon}>📷</Text>
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBox}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Tìm kiếm sản phẩm..."
+              placeholderTextColor="#999"
+            />
+            <TouchableOpacity style={styles.cameraButton}>
+              <Text style={styles.cameraIcon}>📷</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={styles.cartButton}>
+            <Text style={styles.cartIcon}>🛒</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.cartButton}>
-          <Text style={styles.cartIcon}>🛒</Text>
-        </TouchableOpacity>
+
+        {error && (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>⚠️ {error}</Text>
+          </View>
+        )}
       </View>
 
-      {error && (
-        <View style={styles.errorCard}>
-          <Text style={styles.errorText}>⚠️ {error}</Text>
-        </View>
-      )}
-
-      {loading && (
+      {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#ee4d2d" />
           <Text style={styles.loadingText}>Đang tải sản phẩm...</Text>
         </View>
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={renderProductItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+        />
       )}
-    </View>
-  );
-
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        renderItem={renderProductItem}
-        keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-      />
     </View>
   );
 }
@@ -122,14 +119,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   header: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
     backgroundColor: "#1e3a8a",
     paddingTop: 40,
     paddingBottom: 12,
     paddingHorizontal: 12,
+    zIndex: 1000,
+    elevation: 4,
   },
   searchContainer: {
     flexDirection: "row",
@@ -186,12 +181,10 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   loadingContainer: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: 30,
-    backgroundColor: "#fff",
-    marginTop: 12,
-    borderRadius: 8,
   },
   loadingText: {
     marginTop: 10,
