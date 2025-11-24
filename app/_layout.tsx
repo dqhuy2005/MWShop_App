@@ -3,6 +3,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import HomeScreen from "./pages/HomeScreen";
+import NotificationScreen from "./pages/NotificationScreen";
+import ProfileScreen from "./pages/ProfileScreen";
 import TodoScreen from "./pages/TodoScreen";
 
 SplashScreen.preventAutoHideAsync();
@@ -24,7 +26,7 @@ export default function RootLayout() {
           tabBarStyle: {
             backgroundColor: "#fff",
             borderTopWidth: 1,
-            borderTopColor: "#e0e0e0", 
+            borderTopColor: "#e0e0e0",
           },
         }}
       >
@@ -40,6 +42,20 @@ export default function RootLayout() {
           component={TodoScreen}
           options={{
             tabBarLabel: "Todo List",
+          }}
+        />
+        <Tab.Screen
+          name="Notification"
+          component={NotificationScreen}
+          options={{
+            tabBarLabel: "Notification",
+          }}
+        />
+        <Tab.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            tabBarLabel: "Profile",
           }}
         />
       </Tab.Navigator>
