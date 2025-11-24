@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Platform,
   StyleSheet,
   Text,
+  TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { ApiResponse, Product } from "../../interfaces";
+import ProductCard from "../components/ProductCard";
 
 const getApiUrl = () => {
   if (API_URL) {
@@ -61,85 +63,41 @@ export default function HomeScreen() {
   }, []);
 
   const renderProductItem = ({ item }: { item: Product }) => (
-    <View style={styles.productItem}>
-      <View style={styles.productHeader}>
-        <Text style={styles.productName}>{item.name}</Text>
-        {item.is_hot && (
-          <View style={styles.hotBadge}>
-            <Text style={styles.hotBadgeText}>🔥 HOT</Text>
-          </View>
-        )}
-      </View>
-
-      <Text style={styles.productPrice}>
-        {item.price.toLocaleString("vi-VN")} {item.currency}
-      </Text>
-
-      {item.category && (
-        <Text style={styles.productCategory}>📁 {item.category.name}</Text>
-      )}
-
-      {item.description && (
-        <Text style={styles.productDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-
-      <View style={styles.productFooter}>
-        <Text style={styles.productViews}>👁️ {item.views} views</Text>
-        <Text
-          style={[
-            styles.productStatus,
-            item.status ? styles.statusActive : styles.statusInactive,
-          ]}
-        >
-          {item.status ? "✓ Available" : "✗ Unavailable"}
-        </Text>
-      </View>
-    </View>
+    <ProductCard product={item} />
   );
 
   const renderHeader = () => (
-    <>
-      <Text style={styles.title}>Product List</Text>
+    <View style={styles.header}>
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBox}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Tìm kiếm sản phẩm..."
+            placeholderTextColor="#999"
+          />
+          <TouchableOpacity style={styles.cameraButton}>
+            <Text style={styles.cameraIcon}>📷</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={styles.cartButton}>
+          <Text style={styles.cartIcon}>🛒</Text>
+        </TouchableOpacity>
+      </View>
 
       {error && (
         <View style={styles.errorCard}>
-          <Text style={styles.errorTitle}>⚠️ Network Error</Text>
-          <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.errorHint}>API URL: {getApiUrl()}</Text>
-          <Text style={styles.errorHint}>Platform: {Platform.OS}</Text>
-          <Text style={styles.errorHint}>
-            • For Android Emulator: Use 10.0.2.2 instead of localhost
-          </Text>
-          <Text style={styles.errorHint}>
-            • Make sure backend server is running on port 8000
-          </Text>
-          <Text style={styles.errorHint}>
-            • Check if CORS is enabled on your backend
-          </Text>
+          <Text style={styles.errorText}>⚠️ {error}</Text>
         </View>
       )}
 
       {loading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading products...</Text>
+          <ActivityIndicator size="large" color="#ee4d2d" />
+          <Text style={styles.loadingText}>Đang tải sản phẩm...</Text>
         </View>
       )}
-
-      {!loading && !error && data.length === 0 && (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyText}>No products found</Text>
-        </View>
-      )}
-
-      {!loading && !error && data.length > 0 && (
-        <Text style={styles.productsCount}>
-          Showing {data.length} of {totalProducts} total products
-        </Text>
-      )}
-    </>
+    </View>
   );
 
   return (
@@ -150,7 +108,9 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id.toString()}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
       />
     </View>
   );
@@ -159,150 +119,93 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f5f5f5",
   },
-  listContent: {
-    padding: 20,
+  header: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#1e3a8a",
+    paddingTop: 40,
+    paddingBottom: 12,
+    paddingHorizontal: 12,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 10,
-    marginTop: 40,
-    color: "#333",
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 20,
-    color: "#666",
-  },
-  productsCount: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 15,
-    fontStyle: "italic",
-  },
-  productItem: {
-    backgroundColor: "#f9f9f9",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  productHeader: {
+  searchContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
+    alignItems: "center",
+    gap: 8,
   },
-  productName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+  searchBox: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    height: 40,
+  },
+  searchIcon: {
+    fontSize: 16,
     marginRight: 8,
   },
-  hotBadge: {
-    backgroundColor: "#ff5722",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#333",
   },
-  hotBadgeText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
+  cameraButton: {
+    padding: 4,
   },
-  productPrice: {
+  cameraIcon: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#007AFF",
-    marginBottom: 6,
   },
-  productCategory: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 8,
-  },
-  productDescription: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-    marginBottom: 10,
-  },
-  productFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  cartButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
   },
-  productViews: {
-    fontSize: 12,
-    color: "#999",
+  cartIcon: {
+    fontSize: 24,
   },
-  productStatus: {
-    fontSize: 12,
-    fontWeight: "600",
+  messageButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  statusActive: {
-    color: "#4caf50",
+  messageIcon: {
+    fontSize: 24,
   },
-  statusInactive: {
-    color: "#f44336",
+  listContent: {
+    padding: 4,
+  },
+  row: {
+    justifyContent: "flex-start",
+    gap: 0,
   },
   loadingContainer: {
     alignItems: "center",
     justifyContent: "center",
     padding: 30,
+    backgroundColor: "#fff",
+    marginTop: 12,
+    borderRadius: 8,
   },
   loadingText: {
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 14,
     color: "#666",
   },
   errorCard: {
-    backgroundColor: "#ffebee",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#ef5350",
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#c62828",
-    marginBottom: 8,
+    backgroundColor: "#fff3cd",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
   },
   errorText: {
-    fontSize: 14,
-    color: "#d32f2f",
-    marginBottom: 8,
-  },
-  errorHint: {
-    fontSize: 12,
-    color: "#666",
-    fontStyle: "italic",
-  },
-  emptyCard: {
-    backgroundColor: "#f5f5f5",
-    padding: 30,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#999",
+    fontSize: 13,
+    color: "#856404",
   },
 });
