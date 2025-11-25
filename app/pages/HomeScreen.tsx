@@ -35,11 +35,9 @@ export default function HomeScreen() {
   const fetchData = useCallback(
     async (page: number, isLoadMore: boolean = false) => {
       if (isFetchingRef.current) {
-        console.log(`Fetch already in progress, skipping page ${page}`);
         return;
       }
 
-      // Prevent loading the same page again
       if (isLoadMore && lastPageLoadedRef.current >= page) {
         console.log(
           `Page ${page} already loaded (last loaded: ${lastPageLoadedRef.current})`
@@ -59,34 +57,15 @@ export default function HomeScreen() {
         const apiUrl = getApiUrl(page, PER_PAGE);
         console.log(`📡 Fetching page ${page}: ${apiUrl}`);
 
-        const response = await axios.get(apiUrl!, {
-          timeout: 10000,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-
-        console.log(`📦 Response type:`, typeof response.data);
-        console.log(
-          `📦 Response is string:`,
-          typeof response.data === "string"
-        );
+        const response = await axios.get(apiUrl!);
 
         // Parse response if it's a string
         let responseData;
         if (typeof response.data === "string") {
-          console.log(`⚠️ Response came as string, parsing JSON...`);
           responseData = JSON.parse(response.data);
         } else {
           responseData = response.data;
         }
-
-        console.log(`📦 Parsed data structure:`, {
-          hasSuccess: !!responseData.success,
-          hasData: !!responseData.data,
-          dataKeys: Object.keys(responseData.data || {}),
-        });
 
         const products = responseData?.data?.products || [];
         const hasMoreData = responseData?.data?.has_more ?? false;
@@ -114,14 +93,6 @@ export default function HomeScreen() {
             const existingIds = new Set(prevData.map((p: Product) => p.id));
             const newProducts = products.filter(
               (p: Product) => !existingIds.has(p.id)
-            );
-            console.log(`   → Previous products: ${prevData.length}`);
-            console.log(`   → New products received: ${products.length}`);
-            console.log(
-              `   → After filtering duplicates: ${newProducts.length}`
-            );
-            console.log(
-              `   → Total after merge: ${prevData.length + newProducts.length}`
             );
             return [...prevData, ...newProducts];
           });
@@ -220,7 +191,6 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
-          testID="product-list"
           data={data}
           renderItem={renderProductItem}
           keyExtractor={keyExtractor}
