@@ -1,4 +1,5 @@
 import { API_URL } from "@env";
+import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { useEffect, useState } from "react";
 import {
@@ -71,18 +72,24 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.searchContainer}>
           <View style={styles.searchBox}>
-            <Text style={styles.searchIcon}>🔍</Text>
+            <Text style={styles.searchIcon}>
+              <Ionicons name="search" size={16} />
+            </Text>
             <TextInput
               style={styles.searchInput}
               placeholder="Tìm kiếm sản phẩm..."
               placeholderTextColor="#999"
             />
             <TouchableOpacity style={styles.cameraButton}>
-              <Text style={styles.cameraIcon}>📷</Text>
+              <Text style={styles.cameraIcon}>
+                <Ionicons name="camera" size={25} />
+              </Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.cartButton}>
-            <Text style={styles.cartIcon}>🛒</Text>
+            <Text style={styles.cartIcon}>
+              <Ionicons name="cart" size={24} />
+            </Text>
           </TouchableOpacity>
         </View>
 
