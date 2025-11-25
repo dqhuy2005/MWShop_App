@@ -1,7 +1,7 @@
 import { API_URL } from "@env";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,12 +11,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ApiResponse, Product } from "../../interfaces";
+import { Product } from "../../interfaces";
 import ProductCard from "../components/ProductCard";
 
-const getApiUrl = () => {
+const getApiUrl = (page: number, perPage: number) => {
   if (API_URL) {
-    return API_URL;
+    return `${API_URL}/home?page=${page}&per_page=${perPage}`;
   }
   return null;
 };
@@ -24,16 +24,42 @@ const getApiUrl = () => {
 export default function HomeScreen() {
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [totalProducts, setTotalProducts] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const PER_PAGE = 25;
+  const isFetchingRef = useRef(false);
+  const lastPageLoadedRef = useRef(0);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(
+    async (page: number, isLoadMore: boolean = false) => {
+      if (isFetchingRef.current) {
+        console.log(`Fetch already in progress, skipping page ${page}`);
+        return;
+      }
+
+      // Prevent loading the same page again
+      if (isLoadMore && lastPageLoadedRef.current >= page) {
+        console.log(
+          `Page ${page} already loaded (last loaded: ${lastPageLoadedRef.current})`
+        );
+        return;
+      }
+
       try {
-        setLoading(true);
-        const apiUrl = getApiUrl();
+        isFetchingRef.current = true;
 
-        const response = await axios.get<ApiResponse>(apiUrl!, {
+        if (isLoadMore) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+        }
+
+        const apiUrl = getApiUrl(page, PER_PAGE);
+        console.log(`📡 Fetching page ${page}: ${apiUrl}`);
+
+        const response = await axios.get(apiUrl!, {
           timeout: 10000,
           headers: {
             Accept: "application/json",
@@ -41,31 +67,124 @@ export default function HomeScreen() {
           },
         });
 
-        const products = response.data?.data?.products || [];
-        const total = response.data?.data?.total_products || 0;
+        console.log(`📦 Response type:`, typeof response.data);
+        console.log(
+          `📦 Response is string:`,
+          typeof response.data === "string"
+        );
 
-        setData(products);
-        setTotalProducts(total);
+        // Parse response if it's a string
+        let responseData;
+        if (typeof response.data === "string") {
+          console.log(`⚠️ Response came as string, parsing JSON...`);
+          responseData = JSON.parse(response.data);
+        } else {
+          responseData = response.data;
+        }
+
+        console.log(`📦 Parsed data structure:`, {
+          hasSuccess: !!responseData.success,
+          hasData: !!responseData.data,
+          dataKeys: Object.keys(responseData.data || {}),
+        });
+
+        const products = responseData?.data?.products || [];
+        const hasMoreData = responseData?.data?.has_more ?? false;
+        const totalProducts = responseData?.data?.total_products || 0;
+        const currentPageNum = responseData?.data?.current_page || page;
+        const lastPage = responseData?.data?.last_page || 0;
+        const nextPage = responseData?.data?.next_page;
+
+        console.log(`📊 Page ${page} Details:`, {
+          productsReceived: products.length,
+          hasMore: hasMoreData,
+          currentPage: currentPageNum,
+          lastPage: lastPage,
+          nextPage: nextPage,
+          totalProducts: totalProducts,
+          productsArrayEmpty: products.length === 0,
+        });
+
+        console.log(
+          `✅ Page ${page} loaded: ${products.length} products, Has more: ${hasMoreData}`
+        );
+
+        if (isLoadMore) {
+          setData((prevData) => {
+            const existingIds = new Set(prevData.map((p: Product) => p.id));
+            const newProducts = products.filter(
+              (p: Product) => !existingIds.has(p.id)
+            );
+            console.log(`   → Previous products: ${prevData.length}`);
+            console.log(`   → New products received: ${products.length}`);
+            console.log(
+              `   → After filtering duplicates: ${newProducts.length}`
+            );
+            console.log(
+              `   → Total after merge: ${prevData.length + newProducts.length}`
+            );
+            return [...prevData, ...newProducts];
+          });
+        } else {
+          setData(products);
+          console.log(`   → Initial load: ${products.length} products`);
+        }
+
+        setHasMore(hasMoreData);
+        setCurrentPage(page);
+        lastPageLoadedRef.current = page;
         setError(null);
-
-        console.log("Loaded products:", products.length);
       } catch (err: any) {
         const errorMsg =
           err.response?.data?.message || err.message || "Failed to fetch data";
         setError(errorMsg);
-        console.error("API Error:", err);
-        console.error("API URL:", getApiUrl());
       } finally {
+        isFetchingRef.current = false;
         setLoading(false);
+        setLoadingMore(false);
       }
-    };
-
-    fetchData();
-  }, []);
-
-  const renderProductItem = ({ item }: { item: Product }) => (
-    <ProductCard product={item} />
+    },
+    [PER_PAGE]
   );
+
+  useEffect(() => {
+    fetchData(1, false);
+  }, [fetchData]);
+
+  const renderProductItem = useCallback(
+    ({ item }: { item: Product }) => <ProductCard product={item} />,
+    []
+  );
+
+  const keyExtractor = useCallback(
+    (item: Product, index: number) => `${item.id}-${index}`,
+    []
+  );
+
+  const handleLoadMore = useCallback(() => {
+    console.log(
+      `🔄 handleLoadMore called - hasMore: ${hasMore}, currentPage: ${currentPage}`
+    );
+
+    if (!hasMore) {
+      console.log("⛔ No more pages to load");
+      return;
+    }
+
+    const nextPage = currentPage + 1;
+    console.log(`⬇️ === Load More Triggered === Loading page: ${nextPage}`);
+    fetchData(nextPage, true);
+  }, [hasMore, currentPage, fetchData]);
+
+  const renderFooter = useCallback(() => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#ee4d2d" />
+        <Text style={styles.footerText}>Đang tải thêm sản phẩm...</Text>
+      </View>
+    );
+  }, [loadingMore]);
 
   return (
     <View style={styles.container}>
@@ -92,12 +211,6 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-
-        {error && (
-          <View style={styles.errorCard}>
-            <Text style={styles.errorText}>⚠️ {error}</Text>
-          </View>
-        )}
       </View>
 
       {loading ? (
@@ -107,13 +220,22 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
+          testID="product-list"
           data={data}
           renderItem={renderProductItem}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={keyExtractor}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.8}
+          ListFooterComponent={renderFooter}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={6}
+          updateCellsBatchingPeriod={100}
+          initialNumToRender={8}
+          windowSize={5}
         />
       )}
     </View>
@@ -207,5 +329,16 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 13,
     color: "#856404",
+  },
+  footerLoader: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    gap: 10,
+  },
+  footerText: {
+    fontSize: 13,
+    color: "#666",
   },
 });

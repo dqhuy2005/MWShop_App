@@ -6,7 +6,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+const ProductCard = React.memo(({ product }: ProductCardProps) => {
   return (
     <View style={styles.card}>
       <View style={styles.imageContainer}>
@@ -41,7 +41,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       </View>
     </View>
   );
-}
+});
+
+export default ProductCard;
 
 const styles = StyleSheet.create({
   card: {
