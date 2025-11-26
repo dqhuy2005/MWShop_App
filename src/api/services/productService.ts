@@ -1,23 +1,40 @@
-import { ApiResponse, PaginationParams, Product, ProductListResponse } from '../../types';
-import apiClient from '../client';
-import ENDPOINTS from '../endpoints';
+import {
+    ApiResponse,
+    PaginationParams,
+    Product,
+    ProductListResponse,
+} from "../../types";
+import apiClient from "../client";
+import ENDPOINTS from "../endpoints";
 
-export const getProducts = async (params: PaginationParams): Promise<ProductListResponse> => {
+export const getProducts = async (
+  params: PaginationParams
+): Promise<ProductListResponse> => {
   try {
-    const response = await apiClient.get(
-      ENDPOINTS.HOME.LIST,
-      { params }
-    );
-    
+    const response = await apiClient.get(ENDPOINTS.HOME.LIST, { params });
+
     const responseData = response.data;
-    
-    if (responseData.data && typeof responseData.data === 'object') {
-      return responseData.data;
+
+    if (responseData.data && typeof responseData.data === "object") {
+      const data = responseData.data;
+
+      if (data.products && Array.isArray(data.products)) {
+        return data;
+      } else {
+        const error: any = new Error("Thử lại");
+        error.isValidationError = true;
+        throw error;
+      }
     }
-    
-    return responseData;
-  } catch (error) {
-    console.error('❌ Error fetching products:', error);
+
+    if (responseData.products && Array.isArray(responseData.products)) {
+      return responseData;
+    }
+
+    const error: any = new Error("Thử lại");
+    error.isValidationError = true;
+    throw error;
+  } catch (error: any) {
     throw error;
   }
 };
@@ -27,7 +44,7 @@ export const getProductById = async (id: number | string): Promise<Product> => {
     const response = await apiClient.get<ApiResponse<Product>>(
       ENDPOINTS.PRODUCTS.DETAIL(id)
     );
-    
+
     return response.data.data;
   } catch (error) {
     console.error(`❌ Error fetching product ${id}:`, error);
@@ -40,26 +57,36 @@ export const searchProducts = async (
   params: PaginationParams
 ): Promise<ProductListResponse> => {
   try {
-    const response = await apiClient.get(
-      ENDPOINTS.HOME.SEARCH,
-      { 
-        params: {
-          q: keyword,
-          per_page: params.per_page,
-          page: params.page,
-        }
-      }
-    );
-    
+    const response = await apiClient.get(ENDPOINTS.HOME.SEARCH, {
+      params: {
+        q: keyword,
+        per_page: params.per_page,
+        page: params.page,
+      },
+    });
+
     const responseData = response.data;
-    
-    if (responseData.data && typeof responseData.data === 'object') {
-      return responseData.data;
+
+    if (responseData.data && typeof responseData.data === "object") {
+      const data = responseData.data;
+
+      if (data.products && Array.isArray(data.products)) {
+        return data;
+      } else {
+        const error: any = new Error("Thử lại");
+        error.isValidationError = true;
+        throw error;
+      }
     }
-    
-    return responseData;
-  } catch (error) {
-    console.error('❌ Error searching products:', error);
+
+    if (responseData.products && Array.isArray(responseData.products)) {
+      return responseData;
+    }
+
+    const error: any = new Error("Thử lại");
+    error.isValidationError = true;
+    throw error;
+  } catch (error: any) {
     throw error;
   }
 };
@@ -69,7 +96,7 @@ export const getCategories = async () => {
     const response = await apiClient.get(ENDPOINTS.PRODUCTS.CATEGORIES);
     return response.data.data;
   } catch (error) {
-    console.error('❌ Error fetching categories:', error);
+    console.error("❌ Error fetching categories:", error);
     throw error;
   }
 };

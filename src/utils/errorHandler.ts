@@ -1,14 +1,6 @@
-/**
- * Error Handler
- * Utilities for handling and formatting errors
- */
-
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { STRINGS } from '../constants/strings';
 
-/**
- * Error message mapping
- */
 const ERROR_MESSAGES: Record<string, string> = {
   NETWORK_ERROR: STRINGS.errors.network,
   SERVER_ERROR: STRINGS.errors.server,
@@ -19,11 +11,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   UNKNOWN_ERROR: STRINGS.errors.unknown,
 };
 
-/**
- * Get user-friendly error message
- * @param {any} error - Error object
- * @returns {string} Formatted error message
- */
 export const getErrorMessage = (error: any): string => {
   // Network error
   if (!error.response) {
@@ -57,10 +44,6 @@ export const getErrorMessage = (error: any): string => {
   }
 };
 
-/**
- * Log error in development
- * @param {AxiosError} error - Axios error object
- */
 export const logError = (error: AxiosError): void => {
   if (!__DEV__) return;
 
@@ -73,10 +56,6 @@ export const logError = (error: AxiosError): void => {
   console.groupEnd();
 };
 
-/**
- * Log request in development
- * @param {InternalAxiosRequestConfig} config - Request config
- */
 export const logRequest = (config: InternalAxiosRequestConfig): void => {
   if (!__DEV__) return;
 
@@ -88,10 +67,6 @@ export const logRequest = (config: InternalAxiosRequestConfig): void => {
   console.groupEnd();
 };
 
-/**
- * Log response in development
- * @param {AxiosResponse} response - Response object
- */
 export const logResponse = (response: AxiosResponse): void => {
   if (!__DEV__) return;
 
@@ -102,12 +77,6 @@ export const logResponse = (response: AxiosResponse): void => {
   console.groupEnd();
 };
 
-/**
- * Handle error and return formatted message
- * @param {any} error - Error object
- * @param {string} fallbackMessage - Fallback message if error cannot be parsed
- * @returns {string} Formatted error message
- */
 export const handleError = (error: any, fallbackMessage?: string): string => {
   const errorMessage = getErrorMessage(error);
   
