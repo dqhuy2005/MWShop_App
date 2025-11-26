@@ -8,6 +8,11 @@ export const ENDPOINTS = {
     PROFILE: '/auth/profile',
   },
 
+  HOME: {
+    LIST: '/home',
+    SEARCH: '/search',
+  },
+
   // Products
   PRODUCTS: {
     LIST: '/home',

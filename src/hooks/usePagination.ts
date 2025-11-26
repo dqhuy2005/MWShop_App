@@ -37,18 +37,15 @@ export function usePagination<T = any>(
     hasMore: true,
   });
 
-  // Refs to prevent duplicate requests
   const isFetchingRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
 
   const fetchData = useCallback(
     async (page: number = initialPage, isLoadMore: boolean = false) => {
-      // Prevent duplicate requests
       if (isFetchingRef.current) {
         return;
       }
 
-      // Prevent loading same page twice
       if (isLoadMore && lastPageLoadedRef.current >= page) {
         console.log(`Page ${page} already loaded`);
         return;
@@ -80,7 +77,6 @@ export function usePagination<T = any>(
             let newData: T[];
 
             if (isLoadMore) {
-              // Filter out duplicates when loading more
               const existingIds = new Set(
                 prev.data.map((item: any) => item.id)
               );
@@ -119,7 +115,6 @@ export function usePagination<T = any>(
             return;
           }
 
-          // Wait before retrying
           console.log(`🔄 Retrying pagination (attempt ${retryCount + 1}/${maxRetries})...`);
           isFetchingRef.current = false;
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -128,7 +123,7 @@ export function usePagination<T = any>(
     },
     [fetchFunction, perPage, initialPage]
   );
-  
+
   const loadMore = useCallback(async () => {
     if (!state.hasMore || state.loadingMore) {
       return;

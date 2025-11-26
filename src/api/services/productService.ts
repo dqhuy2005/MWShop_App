@@ -5,7 +5,7 @@ import ENDPOINTS from '../endpoints';
 export const getProducts = async (params: PaginationParams): Promise<ProductListResponse> => {
   try {
     const response = await apiClient.get(
-      ENDPOINTS.PRODUCTS.LIST,
+      ENDPOINTS.HOME.LIST,
       { params }
     );
     
@@ -40,17 +40,24 @@ export const searchProducts = async (
   params: PaginationParams
 ): Promise<ProductListResponse> => {
   try {
-    const response = await apiClient.get<ApiResponse<ProductListResponse>>(
-      ENDPOINTS.PRODUCTS.SEARCH,
+    const response = await apiClient.get(
+      ENDPOINTS.HOME.SEARCH,
       { 
         params: {
-          ...params,
           q: keyword,
+          per_page: params.per_page,
+          page: params.page,
         }
       }
     );
     
-    return response.data.data;
+    const responseData = response.data;
+    
+    if (responseData.data && typeof responseData.data === 'object') {
+      return responseData.data;
+    }
+    
+    return responseData;
   } catch (error) {
     console.error('❌ Error searching products:', error);
     throw error;

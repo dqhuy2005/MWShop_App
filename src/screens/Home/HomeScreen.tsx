@@ -4,7 +4,7 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -17,12 +17,14 @@ import {
 import { productService } from '../../api/services';
 import { ProductCard } from '../../components';
 import { COLORS, STRINGS } from '../../constants';
-import { usePagination } from '../../hooks';
+import { useDebounce, usePagination } from '../../hooks';
 import theme from '../../styles/theme';
 import { Product } from '../../types';
 
 const HomeScreen = () => {
-  // Use pagination hook for products
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
   const {
     data: products,
     loading,
@@ -31,41 +33,43 @@ const HomeScreen = () => {
     hasMore,
     fetchData,
     loadMore,
-  } = usePagination<Product>(productService.getProducts, { perPage: 25 });
+  } = usePagination<Product>(
+    (params) => {
+      if (debouncedSearchQuery.trim()) {
+        return productService.searchProducts(debouncedSearchQuery, params);
+      }
+      return productService.getProducts(params);
+    },
+    { perPage: 25 }
+  );
 
-  // Initial data fetch
   useEffect(() => {
     fetchData(1, false);
-  }, []);
+  }, [debouncedSearchQuery]);
 
-  // Render single product item
   const renderProductItem = useCallback(
     ({ item }: { item: Product }) => (
       <ProductCard 
         product={item} 
         onPress={(product) => {
           console.log('Product pressed:', product.id);
-          // Navigate to product detail
         }}
       />
     ),
     []
   );
 
-  // Key extractor
   const keyExtractor = useCallback(
     (item: Product, index: number) => `${item.id}-${index}`,
     []
   );
 
-  // Handle end reached (load more)
   const handleEndReached = useCallback(() => {
     if (hasMore && !loadingMore) {
       loadMore();
     }
   }, [hasMore, loadingMore, loadMore]);
 
-  // Render footer (loading indicator)
   const renderFooter = useCallback(() => {
     if (!loadingMore) return null;
     
@@ -79,7 +83,6 @@ const HomeScreen = () => {
     );
   }, [loadingMore]);
 
-  // Render empty component
   const renderEmpty = useCallback(() => {
     if (loading) return null;
     
@@ -107,6 +110,8 @@ const HomeScreen = () => {
               style={styles.searchInput}
               placeholder={STRINGS.home.searchPlaceholder}
               placeholderTextColor={COLORS.textTertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
             <TouchableOpacity style={styles.cameraButton}>
               <Ionicons 
@@ -142,7 +147,7 @@ const HomeScreen = () => {
             onPress={() => fetchData(1, false)}
           >
             <Text style={styles.retryButtonText}>
-              {STRINGS.common.retry}
+              Thử lại - Retry again
             </Text>
           </TouchableOpacity>
         </View>

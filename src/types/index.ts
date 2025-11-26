@@ -27,13 +27,13 @@ export interface ProductListResponse extends PaginationMeta {
 export interface Product {
   id: number;
   name: string;
+  slug: string;
   price: number;
   image: string;
   category: Category;
   is_hot?: boolean;
   views?: number;
   description?: string;
-  stock?: number;
 }
 
 export interface Category {
