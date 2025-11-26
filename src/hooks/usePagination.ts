@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '../constants/api';
-import { handleError } from '../utils/errorHandler';
 
 interface PaginationState<T> {
   data: T[];
@@ -23,12 +22,6 @@ interface UsePaginationOptions {
   initialPage?: number;
 }
 
-/**
- * Custom hook for paginated data
- * @param {Function} fetchFunction - Function to fetch paginated data
- * @param {UsePaginationOptions} options - Hook options
- * @returns {UsePaginationReturn<T>} Pagination state and functions
- */
 export function usePagination<T = any>(
   fetchFunction: (params: { page: number; per_page: number }) => Promise<any>,
   options: UsePaginationOptions = {}
@@ -48,11 +41,6 @@ export function usePagination<T = any>(
   const isFetchingRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
 
-  /**
-   * Fetch data for a specific page
-   * @param {number} page - Page number to fetch
-   * @param {boolean} isLoadMore - Whether this is a load more request
-   */
   const fetchData = useCallback(
     async (page: number = initialPage, isLoadMore: boolean = false) => {
       // Prevent duplicate requests
@@ -66,70 +54,81 @@ export function usePagination<T = any>(
         return;
       }
 
-      try {
-        isFetchingRef.current = true;
+      let retryCount = 0;
+      const maxRetries = 3;
 
-        setState((prev) => ({
-          ...prev,
-          loading: !isLoadMore,
-          loadingMore: isLoadMore,
-          error: null,
-        }));
+      while (retryCount < maxRetries) {
+        try {
+          isFetchingRef.current = true;
 
-        const response = await fetchFunction({
-          page,
-          per_page: perPage,
-        });
+          setState((prev) => ({
+            ...prev,
+            loading: !isLoadMore,
+            loadingMore: isLoadMore,
+            error: null,
+          }));
 
-        const products = response?.products || [];
-        const hasMoreData = response?.has_more ?? false;
+          const response = await fetchFunction({
+            page,
+            per_page: perPage,
+          });
 
-        setState((prev) => {
-          let newData: T[];
+          const products = response?.products || [];
+          const hasMoreData = response?.has_more ?? false;
 
-          if (isLoadMore) {
-            // Filter out duplicates when loading more
-            const existingIds = new Set(
-              prev.data.map((item: any) => item.id)
-            );
-            const newProducts = products.filter(
-              (item: any) => !existingIds.has(item.id)
-            );
-            newData = [...prev.data, ...newProducts];
-          } else {
-            newData = products;
+          setState((prev) => {
+            let newData: T[];
+
+            if (isLoadMore) {
+              // Filter out duplicates when loading more
+              const existingIds = new Set(
+                prev.data.map((item: any) => item.id)
+              );
+              const newProducts = products.filter(
+                (item: any) => !existingIds.has(item.id)
+              );
+              newData = [...prev.data, ...newProducts];
+            } else {
+              newData = products;
+            }
+
+            return {
+              data: newData,
+              loading: false,
+              loadingMore: false,
+              error: null,
+              currentPage: page,
+              hasMore: hasMoreData,
+            };
+          });
+
+          lastPageLoadedRef.current = page;
+          isFetchingRef.current = false;
+          return;
+        } catch (error: any) {
+          retryCount++;
+          
+          if (retryCount >= maxRetries) {
+            setState((prev) => ({
+              ...prev,
+              loading: false,
+              loadingMore: false,
+              error: 'Không thể tải sản phẩm',
+            }));
+            isFetchingRef.current = false;
+            return;
           }
 
-          return {
-            data: newData,
-            loading: false,
-            loadingMore: false,
-            error: null,
-            currentPage: page,
-            hasMore: hasMoreData,
-          };
-        });
-
-        lastPageLoadedRef.current = page;
-      } catch (error: any) {
-        const errorMessage = handleError(error);
-
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          loadingMore: false,
-          error: errorMessage,
-        }));
-      } finally {
-        isFetchingRef.current = false;
+          // Wait before retrying
+          console.log(`🔄 Retrying pagination (attempt ${retryCount + 1}/${maxRetries})...`);
+          isFetchingRef.current = false;
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
     },
     [fetchFunction, perPage, initialPage]
   );
-
-  /**
-   * Load more data (next page)
-   */
+  
   const loadMore = useCallback(async () => {
     if (!state.hasMore || state.loadingMore) {
       return;
@@ -139,17 +138,11 @@ export function usePagination<T = any>(
     await fetchData(nextPage, true);
   }, [state.hasMore, state.loadingMore, state.currentPage, fetchData]);
 
-  /**
-   * Refresh data (reload first page)
-   */
   const refresh = useCallback(async () => {
     lastPageLoadedRef.current = 0;
     await fetchData(initialPage, false);
   }, [fetchData, initialPage]);
 
-  /**
-   * Reset state
-   */
   const reset = useCallback(() => {
     setState({
       data: [],

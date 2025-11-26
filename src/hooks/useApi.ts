@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-import { handleError } from '../utils/errorHandler';
 
 interface UseApiState<T> {
   data: T | null;
@@ -23,38 +22,47 @@ export function useApi<T = any>(): UseApiReturn<T> {
 
 
   const request = useCallback(async (...args: any[]): Promise<T | null> => {
-    try {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+    let retryCount = 0;
+    const maxRetries = 3;
 
-      // First argument should be the API function
-      const apiFunction = args[0];
-      const apiArgs = args.slice(1);
+    while (retryCount < maxRetries) {
+      try {
+        setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      const response = await apiFunction(...apiArgs);
+        const apiFunction = args[0];
+        const apiArgs = args.slice(1);
 
-      setState({
-        data: response,
-        loading: false,
-        error: null,
-      });
+        const response = await apiFunction(...apiArgs);
 
-      return response;
-    } catch (error: any) {
-      const errorMessage = handleError(error);
-      
-      setState({
-        data: null,
-        loading: false,
-        error: errorMessage,
-      });
+        setState({
+          data: response,
+          loading: false,
+          error: null,
+        });
 
-      return null;
+        return response;
+      } catch (error: any) {
+        retryCount++;
+        
+        if (retryCount >= maxRetries) {
+          setState({
+            data: null,
+            loading: false,
+            error: 'Không thể tải sản phẩm',
+          });
+
+          return null;
+        }
+
+        // Wait before retrying
+        console.log(`🔄 Retrying API call (attempt ${retryCount + 1}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
+
+    return null;
   }, []);
 
-  /**
-   * Reset state
-   */
   const reset = useCallback(() => {
     setState({
       data: null,
@@ -63,10 +71,6 @@ export function useApi<T = any>(): UseApiReturn<T> {
     });
   }, []);
 
-  /**
-   * Set data manually
-   * @param {T|null} data - Data to set
-   */
   const setData = useCallback((data: T | null) => {
     setState((prev) => ({ ...prev, data }));
   }, []);

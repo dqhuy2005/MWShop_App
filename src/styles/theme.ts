@@ -1,8 +1,3 @@
-/**
- * Theme Configuration
- * Central theme settings for the app
- */
-
 import { COLORS } from '../constants/colors';
 
 export const theme = {
@@ -92,7 +87,7 @@ export const theme = {
   // Common dimensions
   dimensions: {
     headerHeight: 60,
-    tabBarHeight: 50,
+    tabBarHeight: 80,
     buttonHeight: 44,
     inputHeight: 44,
     iconSizeSm: 16,

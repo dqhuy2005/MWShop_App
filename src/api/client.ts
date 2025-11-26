@@ -36,22 +36,6 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    if (typeof response.data === 'string' && response.data.trim().length > 0) {
-      try {
-        const parsed = JSON.parse(response.data);
-        response.data = parsed;
-      } catch (error) {
-        if (response.data.startsWith('{') || response.data.startsWith('[')) {
-          console.warn('⚠️ Failed to parse response string, keeping as string');
-          if (__DEV__) {
-            console.warn('Parse error:', error);
-          }
-        }
-      }
-    } else if (typeof response.data === 'string' && response.data.trim().length === 0) {
-      response.data = null;
-    }
-
     if (__DEV__) {
       logResponse(response);
     }
@@ -59,7 +43,10 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as InternalAxiosRequestConfig & { 
+      _retry?: boolean; 
+      _retryCount?: number;
+    };
 
     if (__DEV__) {
       logError(error);
@@ -82,12 +69,20 @@ apiClient.interceptors.response.use(
       console.error('❌ Server Error');
     }
 
-    if (!error.response && originalRequest && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // Retry logic: up to 3 attempts for network errors
+    if (!error.response && originalRequest) {
+      const retryCount = originalRequest._retryCount || 0;
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return apiClient(originalRequest);
+      if (retryCount < 3) {
+        originalRequest._retryCount = retryCount + 1;
+        console.log(`🔄 Retrying request (attempt ${originalRequest._retryCount}/3)...`);
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        return apiClient(originalRequest);
+      } else {
+        console.error('❌ Max retries reached');
+      }
     }
 
     return Promise.reject(error);
