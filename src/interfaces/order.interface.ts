@@ -1,5 +1,5 @@
-import { OrderStatus } from '@/src/types/order.type';
-import { Product } from './product.interface';
+import { OrderStatus } from "@/src/types/order.type";
+import { Product } from "./product.interface";
 
 export interface Order {
   id: number;
