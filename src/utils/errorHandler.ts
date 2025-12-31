@@ -1,5 +1,5 @@
-import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { STRINGS } from '../constants/strings';
+import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import { STRINGS } from "../constants/strings";
 
 const ERROR_MESSAGES: Record<string, string> = {
   NETWORK_ERROR: STRINGS.errors.network,
@@ -12,7 +12,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export const getErrorMessage = (error: any): string => {
-  // Network error
   if (!error.response) {
     return ERROR_MESSAGES.NETWORK_ERROR;
   }
@@ -20,12 +19,10 @@ export const getErrorMessage = (error: any): string => {
   const status = error.response?.status;
   const message = error.response?.data?.message;
 
-  // Use API message if available
-  if (message && typeof message === 'string') {
+  if (message && typeof message === "string") {
     return message;
   }
 
-  // Map status codes to messages
   switch (status) {
     case 400:
       return ERROR_MESSAGES.VALIDATION_ERROR;
@@ -47,43 +44,28 @@ export const getErrorMessage = (error: any): string => {
 export const logError = (error: AxiosError): void => {
   if (!__DEV__) return;
 
-  console.group('❌ API Error');
-  console.error('Message:', error.message);
-  console.error('Status:', error.response?.status);
-  console.error('URL:', error.config?.url);
-  console.error('Method:', error.config?.method?.toUpperCase());
-  console.error('Data:', error.response?.data);
-  console.groupEnd();
+  console.error("❌ API Error:", {
+    message: error.message,
+    config: error.config,
+    response: error.response,
+  });
 };
 
 export const logRequest = (config: InternalAxiosRequestConfig): void => {
   if (!__DEV__) return;
-
-  console.group('📡 API Request');
-  console.log('URL:', config.url);
-  console.log('Method:', config.method?.toUpperCase());
-  console.log('Params:', config.params);
-  console.log('Data:', config.data);
-  console.groupEnd();
 };
 
 export const logResponse = (response: AxiosResponse): void => {
   if (!__DEV__) return;
-
-  console.group('✅ API Response');
-  console.log('URL:', response.config.url);
-  console.log('Status:', response.status);
-  console.log('Data:', response.data);
-  console.groupEnd();
 };
 
 export const handleError = (error: any, fallbackMessage?: string): string => {
   const errorMessage = getErrorMessage(error);
-  
+
   if (__DEV__) {
     logError(error);
   }
-  
+
   return errorMessage || fallbackMessage || ERROR_MESSAGES.UNKNOWN_ERROR;
 };
 

@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
-import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '../constants/api';
+import { useCallback, useRef, useState } from "react";
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from "../constants/api";
 
 interface PaginationState<T> {
   data: T[];
@@ -47,7 +47,6 @@ export function usePagination<T = any>(
       }
 
       if (isLoadMore && lastPageLoadedRef.current >= page) {
-        console.log(`Page ${page} already loaded`);
         return;
       }
 
@@ -103,21 +102,20 @@ export function usePagination<T = any>(
           return;
         } catch (error: any) {
           retryCount++;
-          
+
           if (retryCount >= maxRetries) {
             setState((prev) => ({
               ...prev,
               loading: false,
               loadingMore: false,
-              error: 'Không thể tải sản phẩm',
+              error: "Không thể tải sản phẩm",
             }));
             isFetchingRef.current = false;
             return;
           }
 
-          console.log(`🔄 Retrying pagination (attempt ${retryCount + 1}/${maxRetries})...`);
           isFetchingRef.current = false;
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
     },

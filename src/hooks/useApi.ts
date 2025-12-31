@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 
 interface UseApiState<T> {
   data: T | null;
@@ -12,14 +12,12 @@ interface UseApiReturn<T> extends UseApiState<T> {
   setData: (data: T | null) => void;
 }
 
-
 export function useApi<T = any>(): UseApiReturn<T> {
   const [state, setState] = useState<UseApiState<T>>({
     data: null,
     loading: false,
     error: null,
   });
-
 
   const request = useCallback(async (...args: any[]): Promise<T | null> => {
     let retryCount = 0;
@@ -43,20 +41,18 @@ export function useApi<T = any>(): UseApiReturn<T> {
         return response;
       } catch (error: any) {
         retryCount++;
-        
+
         if (retryCount >= maxRetries) {
           setState({
             data: null,
             loading: false,
-            error: 'Không thể tải sản phẩm',
+            error: "Không thể tải sản phẩm",
           });
 
           return null;
         }
 
-        // Wait before retrying
-        console.log(`🔄 Retrying API call (attempt ${retryCount + 1}/${maxRetries})...`);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
 

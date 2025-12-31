@@ -1,8 +1,8 @@
 import {
-    ApiResponse,
-    PaginationParams,
-    Product,
-    ProductListResponse,
+  ApiResponse,
+  PaginationParams,
+  Product,
+  ProductListResponse,
 } from "../../types";
 import apiClient from "../client";
 import ENDPOINTS from "../endpoints";
@@ -47,7 +47,7 @@ export const getProductById = async (id: number | string): Promise<Product> => {
 
     return response.data.data;
   } catch (error) {
-    console.error(`❌ Error fetching product ${id}:`, error);
+    console.error(`Error fetching product ${id}:`, error);
     throw error;
   }
 };
@@ -96,7 +96,7 @@ export const getCategories = async () => {
     const response = await apiClient.get(ENDPOINTS.PRODUCTS.CATEGORIES);
     return response.data.data;
   } catch (error) {
-    console.error("❌ Error fetching categories:", error);
+    console.error("Error fetching categories:", error);
     throw error;
   }
 };

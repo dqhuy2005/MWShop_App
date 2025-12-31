@@ -1,11 +1,3 @@
-/**
- * Src Index
- * Main export file for the src directory
- * 
- * This file provides a centralized export point for all modules in the src directory.
- * Import from here for better organization and maintainability.
- */
-
 // API exports
 export { default as apiClient } from './api/client';
 export { default as ENDPOINTS } from './api/endpoints';

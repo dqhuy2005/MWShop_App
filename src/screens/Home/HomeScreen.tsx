@@ -1,28 +1,23 @@
-/**
- * Home Screen
- * Main product listing screen with infinite scroll
- */
-
-import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { productService } from '../../api/services';
-import { ProductCard } from '../../components';
-import { COLORS, STRINGS } from '../../constants';
-import { useDebounce, usePagination } from '../../hooks';
-import theme from '../../styles/theme';
-import { Product } from '../../types';
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { productService } from "../../api/services";
+import { ProductCard } from "../../components";
+import { COLORS, STRINGS } from "../../constants";
+import { useDebounce, usePagination } from "../../hooks";
+import theme from "../../styles/theme";
+import { Product } from "../../types";
 
 const HomeScreen = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const {
@@ -49,10 +44,10 @@ const HomeScreen = () => {
 
   const renderProductItem = useCallback(
     ({ item }: { item: Product }) => (
-      <ProductCard 
-        product={item} 
+      <ProductCard
+        product={item}
         onPress={(product) => {
-          console.log('Product pressed:', product.id);
+          alert(`Selected Product: ${product.name}`);
         }}
       />
     ),
@@ -72,25 +67,21 @@ const HomeScreen = () => {
 
   const renderFooter = useCallback(() => {
     if (!loadingMore) return null;
-    
+
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color={COLORS.secondary} />
-        <Text style={styles.footerText}>
-          {STRINGS.home.loadingMore}
-        </Text>
+        <Text style={styles.footerText}>{STRINGS.home.loadingMore}</Text>
       </View>
     );
   }, [loadingMore]);
 
   const renderEmpty = useCallback(() => {
     if (loading) return null;
-    
+
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
-          {STRINGS.home.noProducts}
-        </Text>
+        <Text style={styles.emptyText}>{STRINGS.home.noProducts}</Text>
       </View>
     );
   }, [loading]);
@@ -101,11 +92,7 @@ const HomeScreen = () => {
       <View style={styles.header}>
         <View style={styles.searchContainer}>
           <View style={styles.searchBox}>
-            <Ionicons 
-              name="search" 
-              size={16} 
-              color={COLORS.textSecondary}
-            />
+            <Ionicons name="search" size={16} color={COLORS.textSecondary} />
             <TextInput
               style={styles.searchInput}
               placeholder={STRINGS.home.searchPlaceholder}
@@ -114,19 +101,11 @@ const HomeScreen = () => {
               onChangeText={setSearchQuery}
             />
             <TouchableOpacity style={styles.cameraButton}>
-              <Ionicons 
-                name="camera" 
-                size={24} 
-                color={COLORS.textSecondary}
-              />
+              <Ionicons name="camera" size={24} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.cartButton}>
-            <Ionicons 
-              name="cart" 
-              size={24} 
-              color={COLORS.surface}
-            />
+            <Ionicons name="cart" size={24} color={COLORS.surface} />
           </TouchableOpacity>
         </View>
       </View>
@@ -135,20 +114,16 @@ const HomeScreen = () => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.secondary} />
-          <Text style={styles.loadingText}>
-            {STRINGS.home.loading}
-          </Text>
+          <Text style={styles.loadingText}>{STRINGS.home.loading}</Text>
         </View>
       ) : error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.retryButton}
             onPress={() => fetchData(1, false)}
           >
-            <Text style={styles.retryButtonText}>
-              Thử lại - Retry again
-            </Text>
+            <Text style={styles.retryButtonText}>Thử lại - Retry again</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -191,14 +166,14 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
   },
   searchBox: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.surface,
     borderRadius: theme.borderRadius.sm,
     paddingHorizontal: theme.spacing.md,
@@ -216,20 +191,20 @@ const styles = StyleSheet.create({
   cartButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: {
     padding: theme.spacing.xs,
   },
   row: {
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
     gap: 0,
   },
   loadingContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: theme.spacing.xxxl,
   },
   loadingText: {
@@ -239,14 +214,14 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: theme.spacing.xxxl,
   },
   errorText: {
     fontSize: theme.typography.fontSizes.md,
     color: COLORS.error,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.lg,
   },
   retryButton: {
@@ -262,8 +237,8 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: theme.spacing.xxxl,
   },
   emptyText: {
@@ -271,9 +246,9 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   footerLoader: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     padding: theme.spacing.xl,
     gap: theme.spacing.md,
   },
