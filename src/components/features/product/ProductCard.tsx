@@ -1,8 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
+import { Product } from "../../../interfaces";
 import theme from "../../../styles/theme";
-import { Product } from "../../../types";
 import { formatCurrency, formatNumber } from "../../../utils/formatters";
 
 interface ProductCardProps {

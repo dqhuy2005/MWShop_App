@@ -5,7 +5,7 @@ export const API_TIMEOUT = 30000; // 30 seconds
 export const MAX_RETRY_ATTEMPTS = 3;
 export const RETRY_DELAY = 1000; // 1 second
 
-// Pagination defaults
+// Pagination
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_PER_PAGE = 25;
 

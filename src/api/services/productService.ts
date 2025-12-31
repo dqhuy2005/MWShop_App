@@ -3,7 +3,7 @@ import {
   PaginationParams,
   Product,
   ProductListResponse,
-} from "../../types";
+} from "../../interfaces";
 import apiClient from "../client";
 import ENDPOINTS from "../endpoints";
 

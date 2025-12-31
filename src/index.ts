@@ -25,6 +25,9 @@ export { default as theme } from './styles/theme';
 // Types
 export * from './types';
 
+// Interfaces
+export * from './interfaces';
+
 // Utils
 export * from './utils';
 

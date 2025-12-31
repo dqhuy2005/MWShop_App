@@ -13,8 +13,8 @@ import { productService } from "../../api/services";
 import { ProductCard } from "../../components";
 import { COLORS, STRINGS } from "../../constants";
 import { useDebounce, usePagination } from "../../hooks";
+import { Product } from "../../interfaces";
 import theme from "../../styles/theme";
-import { Product } from "../../types";
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
